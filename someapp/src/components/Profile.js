@@ -27,7 +27,7 @@ const Profile = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:8080/api/profile', {
+      const response = await fetch('https://phonomania-backend.onrender.com/api/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -63,7 +63,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/profile', {
+      const response = await fetch('https://phonomania-backend.onrender.com/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/profile/change-password', {
+      const response = await fetch('https://phonomania-backend.onrender.com/api/profile/change-password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
