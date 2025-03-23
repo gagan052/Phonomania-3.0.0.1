@@ -20,7 +20,7 @@ const Cart = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:8080/api/cart', {
+      const response = await fetch('https://phonomania-backend.onrender.com/api/cart', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -50,7 +50,7 @@ const Cart = () => {
       const item = cartItems.find(item => item.product._id === productId);
       const newQuantity = Math.max(1, item.quantity + change);
 
-      const response = await fetch(`http://localhost:8080/api/cart/update/${productId}`, {
+      const response = await fetch(`https://phonomania-backend.onrender.com/api/cart/update/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ const Cart = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/cart/remove/${productId}`, {
+      const response = await fetch(`https://phonomania-backend.onrender.com/api/cart/remove/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
