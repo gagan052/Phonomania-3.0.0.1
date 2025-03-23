@@ -1,0 +1,83 @@
+/* Navbar.css - Styling for the e-commerce navigation */
+
+.navbar {
+  padding: 0.8rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.nav-link {
+  position: relative;
+  padding: 0.5rem 1rem !important;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #3498db;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 70%;
+}
+
+.search-form {
+  position: relative;
+  width: 100%;
+}
+
+.search-form input {
+  border-radius: 20px;
+  padding-left: 15px;
+  border: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.search-form button {
+  border-radius: 0 20px 20px 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.cart-icon {
+  font-size: 1.2rem;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.cart-icon:hover {
+  color: #3498db;
+}
+
+.badge {
+  font-size: 0.6rem;
+  padding: 0.25rem 0.4rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .navbar-collapse {
+    margin-top: 1rem;
+  }
+  
+  .search-form {
+    margin-bottom: 1rem;
+  }
+  
+  .nav-link {
+    text-align: center;
+  }
+}
