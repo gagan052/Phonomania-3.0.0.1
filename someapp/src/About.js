@@ -6,7 +6,7 @@ const About = () =>{
      return(
         <>
         <section id="header">
-          <div className="container py-5">
+          <div className="container  py-5">
             <div className="row align-items-center">
               <div className="col-md-6 order-2 order-lg-1">
                 <h1 className="hero-heading">About <strong className="brand">PhoneMania</strong></h1> 
@@ -59,6 +59,7 @@ const About = () =>{
                     <div className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style={{width: '70px', height: '70px'}}>
                       <i className="fas fa-headset fs-2"></i>
                     </div>
+                    {/* jkkj */}
                     <h4 className="card-title">Customer Support</h4>
                     <p className="card-text">Our dedicated support team is always ready to assist you with any questions or concerns.</p>
                   </div>
