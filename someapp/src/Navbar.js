@@ -4,6 +4,7 @@ import './Home.css';
 import './Navbar.css';
 import './amazon-theme.css';
 import { NavLink } from "react-router-dom";
+import apiService from "./utils/new-request";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -50,16 +51,8 @@ const Navbar = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('https://localhost:8081/api/cart', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setCartCount(data.items.length);
-      }
+      const response = await apiService.getCart();
+      setCartCount(response.data.items.length);
     } catch (err) {
       console.error('Failed to fetch cart:', err);
     }

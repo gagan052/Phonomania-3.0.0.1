@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
+import apiService from '../utils/new-request';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,25 +40,28 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('https://localhost:8081/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await apiService.login(formData);
+      const data = response.data;
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        window.dispatchEvent(new Event('authStateChange'));
-        navigate('/');
+      // Dispatch event to notify other components of auth state change
+      window.dispatchEvent(new Event('authStateChange'));
+
+      navigate('/');
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(error.response.data.message || 'Login failed');
+      } else if (error.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please try again later.');
       } else {
-        setError(data.message || 'Invalid email or password');
+        // Something happened in setting up the request that triggered an Error
+        setError('Error: ' + error.message);
       }
-    } catch (err) {
-      setError('Network error. Please try again later.');
     } finally {
       setIsLoading(false);
     }

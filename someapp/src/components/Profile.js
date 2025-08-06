@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
+import apiService from '../utils/new-request';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -27,26 +28,24 @@ const Profile = () => {
         return;
       }
 
-      const response = await fetch('https://localhost:8081/api/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await apiService.getProfile();
+      const data = response.data;
+      
+      setUser(data.user);
+      setFormData({
+        name: data.user.name,
+        email: data.user.email,
+        currentPassword: '',
+        newPassword: ''
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        setUser(data.user);
-        setFormData({
-          name: data.user.name,
-          email: data.user.email,
-          currentPassword: '',
-          newPassword: ''
-        });
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      } else if (error.response) {
+        setError(error.response.data.message || 'Failed to fetch profile');
       } else {
-        setError(data.message);
+        setError('Network error. Please try again.');
       }
-    } catch (err) {
-      setError('Failed to fetch profile');
     } finally {
       setLoading(false);
     }
@@ -62,62 +61,47 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('https://localhost:8081/api/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email
-        })
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setUser(data.user);
-        setEditMode(false);
+      const userData = {
+        name: formData.name,
+        email: formData.email
+      };
+      
+      const response = await apiService.updateProfile(userData);
+      setUser(response.data.user);
+      setEditMode(false);
+    } catch (error) {
+      if (error.response) {
+        setError(error.response.data.message || 'Failed to update profile');
       } else {
-        setError(data.message);
+        setError('Network error. Please try again.');
       }
-    } catch (err) {
-      setError('Failed to update profile');
     }
   };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('https://localhost:8081/api/profile/change-password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword
-        })
+      const passwordData = {
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword
+      };
+      
+      await apiService.changePassword(passwordData);
+      
+      setFormData({
+        ...formData,
+        currentPassword: '',
+        newPassword: ''
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        setFormData({
-          ...formData,
-          currentPassword: '',
-          newPassword: ''
-        });
-        setError('');
-        alert('Password updated successfully');
-        setEditMode(false);
+      setError('');
+      alert('Password updated successfully');
+      setEditMode(false);
+    } catch (error) {
+      if (error.response) {
+        setError(error.response.data.message || 'Failed to update password');
       } else {
-        setError(data.message);
+        setError('Network error. Please try again.');
       }
-    } catch (err) {
-      setError('Failed to update password');
     }
   };
 

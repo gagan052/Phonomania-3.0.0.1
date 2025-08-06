@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
 import './Home.css';
+import apiService from './utils/new-request';
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -21,15 +22,10 @@ const Home = () => {
   const fetchUserListings = async () => {
     try {
       setLoadingListings(true);
-      const response = await fetch('https://localhost:8081/api/listings/');
+      const response = await apiService.getUserListings();
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch user listings');
-      }
-      
-      const data = await response.json();
       // Get up to 4 user listings to display
-      setUserListings(data.slice(0, 4));
+      setUserListings(response.data.slice(0, 4));
     } catch (error) {
       console.error('Error fetching user listings:', error);
     } finally {
@@ -60,14 +56,7 @@ const Home = () => {
       // If it's a user listing, use the provided price, otherwise use the hardcoded price
       const productPrice = isUserListing ? price : getProductPrice(productId);
       
-      const response = await fetch('https://localhost:8081/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productId, quantity, price: productPrice })
-      });
+      const response = await apiService.addToCart(productId, quantity, productPrice);
       
       // Helper function to get product price based on ID
       function getProductPrice(id) {
@@ -80,15 +69,13 @@ const Home = () => {
         return prices[id] || 999.99; // Default price if not found
       }
 
-      const data = await response.json();
-      
       // Reset button state
       if (productElement) {
         productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
         productElement.disabled = false;
       }
       
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         // Trigger cart update event to refresh cart count in navbar
         window.dispatchEvent(new CustomEvent('authStateChange'));
         
@@ -106,7 +93,7 @@ const Home = () => {
         // Show error message
         const errorMessage = document.createElement('div');
         errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
-        errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${data.message || 'Failed to add product to cart'}`;
+        errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${response.data?.message || 'Failed to add product to cart'}`;
         document.body.appendChild(errorMessage);
         
         // Remove the message after 3 seconds
@@ -127,7 +114,17 @@ const Home = () => {
       // Show error message
       const errorMessage = document.createElement('div');
       errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
-      errorMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Network error. Please check your connection.';
+      let errorText = 'Failed to add product to cart';
+      
+      if (error.response && error.response.data) {
+        errorText = error.response.data.message || errorText;
+      } else if (error.message) {
+        errorText = error.message;
+      } else {
+        errorText = 'Network error. Please check your connection.';
+      }
+      
+      errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${errorText}`;
       document.body.appendChild(errorMessage);
       
       // Remove the message after 3 seconds

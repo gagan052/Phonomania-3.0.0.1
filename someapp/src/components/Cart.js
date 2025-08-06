@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Cart.css';
+import apiService from '../utils/new-request';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -22,20 +23,14 @@ const Cart = () => {
         return;
       }
 
-      const response = await fetch('https://localhost:8081/api/cart', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch cart');
-      }
-
-      const data = await response.json();
-      setCartItems(data.items || []);
+      const response = await apiService.getCart();
+      setCartItems(response.data.items || []);
     } catch (error) {
-      setError('Failed to load cart. Please try again.');
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      } else {
+        setError('Failed to load cart. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -54,24 +49,16 @@ const Cart = () => {
       const newQuantity = Math.max(1, item.quantity + change);
 
       setLoading(true);
-      const response = await fetch(`https://localhost:8081/api/cart/update/${productId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ quantity: newQuantity })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update quantity');
-      }
-
-      const updatedCart = await response.json();
-      setCartItems(updatedCart.items || []);
+      const response = await apiService.updateCartItem(productId, newQuantity);
+      setCartItems(response.data.items || []);
     } catch (error) {
-      setError(error.message);
+      if (error.response) {
+        setError(error.response.data.message || 'Failed to update quantity');
+      } else {
+        setError('Network error. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,22 +71,16 @@ const Cart = () => {
       }
 
       setLoading(true);
-      const response = await fetch(`https://localhost:8081/api/cart/remove/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to remove item');
-      }
-
-      const updatedCart = await response.json();
-      setCartItems(updatedCart.items || []);
+      const response = await apiService.removeFromCart(productId);
+      setCartItems(response.data.items || []);
     } catch (error) {
-      setError(error.message);
+      if (error.response) {
+        setError(error.response.data.message || 'Failed to remove item');
+      } else {
+        setError('Network error. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
