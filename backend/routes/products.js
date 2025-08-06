@@ -1,11 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const uuid = require('uuid');
 
-// Get all products
+// Get all products with search functionality
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
+    const { search, category } = req.query;
+    let query = {};
+    
+    // If search parameter exists, create a search query
+    if (search) {
+      // Search in name, description, brand fields using case-insensitive regex
+      query = {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { brand: { $regex: search, $options: 'i' } }
+        ]
+      };
+      
+      // If category is specified and not 'All', add it to the query
+      if (category && category !== 'All') {
+        query.category = { $regex: category, $options: 'i' };
+      }
+    }
+    
+    const products = await Product.find(query);
     res.json(products);
   } catch (error) {
     console.error(error);
@@ -32,6 +53,7 @@ router.post('/', async (req, res) => {
   try {
     const { name, description, price, images, category, brand, stock } = req.body;
     const product = new Product({
+      productId: uuid.v4(),
       name,
       description,
       price,

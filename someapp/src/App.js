@@ -13,7 +13,16 @@ import Profile from "./components/Profile";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Cart from "./components/Cart";
+import CheckoutSuccess from "./components/CheckoutSuccess";
+import ImageUploadDemo from "./components/ImageUploadDemo";
+import SellDevice from "./components/SellDevice";
+import UserListings from "./components/UserListings";
+import AllUserListings from "./components/AllUserListings";
+import SearchResults from "./components/SearchResults";
 import './index.css';
+
+// Amazon-inspired styles
+import './amazon-theme.css';
 const App = () =>{
    
     return(
@@ -29,6 +38,12 @@ const App = () =>{
     <Route path="/login" element={<Login />}/>
     <Route path="/register" element={<Register />}/>
     <Route path="/cart" element={<Cart />}/>
+    <Route path="/checkout-success" element={<CheckoutSuccess />}/>
+    <Route path="/image-upload" element={<ImageUploadDemo />}/>
+    <Route path="/sell-device" element={<SellDevice />}/>
+    <Route path="/my-listings" element={<UserListings />}/>
+    <Route path="/user-listings" element={<AllUserListings />}/>
+    <Route path="/search" element={<SearchResults />}/>
   </Routes>
   
      

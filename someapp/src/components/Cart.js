@@ -7,6 +7,8 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
   useEffect(() => {
     fetchCart();
@@ -20,7 +22,7 @@ const Cart = () => {
         return;
       }
 
-      const response = await fetch('https://phonomania-backend.onrender.com/api/cart', {
+      const response = await fetch('https://localhost:8081/api/cart', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -40,6 +42,7 @@ const Cart = () => {
   };
 
   const updateQuantity = async (productId, change) => {
+    
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -50,7 +53,8 @@ const Cart = () => {
       const item = cartItems.find(item => item.product._id === productId);
       const newQuantity = Math.max(1, item.quantity + change);
 
-      const response = await fetch(`https://phonomania-backend.onrender.com/api/cart/update/${productId}`, {
+      setLoading(true);
+      const response = await fetch(`https://localhost:8081/api/cart/update/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +83,8 @@ const Cart = () => {
         return;
       }
 
-      const response = await fetch(`https://phonomania-backend.onrender.com/api/cart/remove/${productId}`, {
+      setLoading(true);
+      const response = await fetch(`https://localhost:8081/api/cart/remove/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -110,7 +115,11 @@ const Cart = () => {
   if (loading) {
     return (
       <div className="cart-container">
-        <h1 className="cart-title">Loading cart...</h1>
+        <div className="loading-container">
+          <i className="fas fa-spinner fa-spin loading-spinner"></i>
+          <h2>Loading your cart...</h2>
+          <p>Please wait while we fetch your items</p>
+        </div>
       </div>
     );
   }
@@ -118,9 +127,73 @@ const Cart = () => {
   if (error) {
     return (
       <div className="cart-container">
-        <h1 className="cart-title">Error</h1>
-        <p className="error-message">{error}</p>
-        <button className="continue-shopping" onClick={fetchCart}>Try Again</button>
+        <div className="error-container">
+          <h1 className="cart-title">Error</h1>
+          <p className="error-message">{error}</p>
+          <div className="error-actions">
+            <button className="continue-shopping" onClick={fetchCart}>Try Again</button>
+            <button className="dismiss-error" onClick={clearError}>Dismiss</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleCheckout = async () => {
+    try {
+      setCheckoutLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      // Simulate checkout process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real application, you would make an API call to create an order
+      // const response = await fetch('https://phonomania-store.onrender.com/api/orders', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({
+      //     items: cartItems,
+      //     shippingAddress: user.address,
+      //     paymentMethod: 'credit_card',
+      //     totalAmount: total
+      //   })
+      // });
+      
+      setCheckoutSuccess(true);
+      setCartItems([]);
+      
+      // Redirect to success page after a delay
+      setTimeout(() => {
+        navigate('/checkout-success');
+      }, 2000);
+      
+    } catch (error) {
+      setError('Checkout failed. Please try again.');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  // Function to clear error message
+  const clearError = () => {
+    setError(null);
+  };
+
+  if (checkoutSuccess) {
+    return (
+      <div className="cart-container">
+        <div className="checkout-success">
+          <i className="fas fa-check-circle success-icon"></i>
+          <h2>Order Placed Successfully!</h2>
+          <p>Thank you for your purchase. Redirecting to confirmation page...</p>
+        </div>
       </div>
     );
   }
@@ -206,8 +279,20 @@ const Cart = () => {
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
-            <button className="checkout-btn">
-              <i className="fas fa-lock"></i> Secure Checkout
+            <button 
+              className="checkout-btn" 
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+            >
+              {checkoutLoading ? (
+                <>
+                  <i className="fas fa-spinner fa-spin"></i> Processing...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-lock"></i> Secure Checkout
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -215,7 +300,7 @@ const Cart = () => {
         <div className="empty-cart">
           <h2>Your cart is empty</h2>
           <p>Add some products to your cart to see them here!</p>
-          <button className="continue-shopping">Continue Shopping</button>
+          <button className="continue-shopping" onClick={() => navigate('/products')}>Continue Shopping</button>
         </div>
       )}
     </div>

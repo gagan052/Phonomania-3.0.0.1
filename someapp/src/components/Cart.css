@@ -294,8 +294,8 @@
 
 .checkout-btn {
   width: 100%;
-  background-color: #48bb78;
-  color: #fff;
+  background-color: #4299e1;
+  color: white;
   border: none;
   padding: 1.25rem;
   border-radius: 12px;
@@ -305,20 +305,29 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.2);
-
-  cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1.5rem;
 }
 
 .checkout-btn:hover {
-  background-color: #218838;
+  background-color: #3182ce;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-btn:disabled {
+  background-color: #90cdf4;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .empty-cart {
@@ -347,6 +356,412 @@
   background-color: #0056b3;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Checkout Success Styles */
+.checkout-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.checkout-success-container {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 0;
+}
+
+.checkout-success-card {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 3rem 2rem;
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.success-icon-container {
+  margin-bottom: 1.5rem;
+}
+
+.success-icon {
+  font-size: 5rem;
+  color: #48bb78;
+  animation: scaleIn 0.5s ease-in-out;
+}
+
+.success-message {
+  font-size: 1.2rem;
+  color: #4a5568;
+  margin-bottom: 2rem;
+}
+
+.order-details {
+  background-color: #f7fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.order-details h3 {
+  color: #2d3748;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.success-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.continue-shopping-btn, .view-orders-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.continue-shopping-btn {
+  background-color: #4299e1;
+  color: white;
+}
+
+.continue-shopping-btn:hover {
+  background-color: #3182ce;
+}
+
+.view-orders-btn {
+  background-color: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+}
+
+.view-orders-btn:hover {
+  background-color: #edf2f7;
+}
+
+/* Image Uploader Styles */
+.image-uploader-container {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.image-uploader-header {
+  margin-bottom: 1.5rem;
+}
+
+.image-uploader-info {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.image-uploader-error {
+  background-color: #fed7d7;
+  color: #e53e3e;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.image-uploader-dropzone {
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.image-uploader-dropzone:hover {
+  border-color: #4299e1;
+  background-color: #ebf8ff;
+}
+
+.image-uploader-input {
+  display: none;
+}
+
+.image-uploader-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: #4a5568;
+}
+
+.image-uploader-label i {
+  font-size: 2.5rem;
+  color: #4299e1;
+}
+
+.image-uploader-preview {
+  margin-top: 1.5rem;
+}
+
+.image-uploader-files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.image-uploader-file {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-uploader-file-preview {
+  height: 120px;
+  overflow: hidden;
+}
+
+.image-uploader-file-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-uploader-file-info {
+  padding: 0.5rem;
+  background-color: #f7fafc;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}
+
+.image-uploader-file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.image-uploader-file-size {
+  color: #718096;
+}
+
+.image-uploader-progress {
+  height: 4px;
+  background-color: #e2e8f0;
+  position: relative;
+  margin-top: 0.25rem;
+}
+
+.image-uploader-progress-bar {
+  height: 100%;
+  background-color: #4299e1;
+  transition: width 0.3s ease;
+}
+
+.image-uploader-remove-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-uploader-remove-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.image-uploader-upload-btn {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.image-uploader-upload-btn:hover {
+  background-color: #3182ce;
+}
+
+.image-uploader-upload-btn:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.image-uploader-results {
+  margin-top: 2rem;
+}
+
+.image-uploader-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.image-uploader-gallery-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 150px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-uploader-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-uploader-gallery-item-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-uploader-gallery-item:hover .image-uploader-gallery-item-overlay {
+  opacity: 1;
+}
+
+.image-uploader-copy-btn {
+  background-color: white;
+  color: #4a5568;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-uploader-copy-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Error Handling Styles */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Loading Styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  min-height: 300px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  color: #4299e1;
+  margin-bottom: 1.5rem;
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.dismiss-error {
+  padding: 0.6rem 1.2rem;
+  background-color: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dismiss-error:hover {
+  background-color: #edf2f7;
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 768px) {

@@ -23,21 +23,24 @@ router.get('/', auth, async (req, res) => {
 // Add item to cart
 router.post('/add', auth, async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, price } = req.body;
 
     if (!productId || !quantity || quantity < 1) {
       return res.status(400).json({ message: 'Invalid product or quantity' });
     }
 
-    // Validate product
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    let product;
+    let productPrice = price; // Use the price from the request
 
-    // Check stock
-    if (product.stock < quantity) {
-      return res.status(400).json({ message: 'Insufficient stock' });
+    try {
+      // Try to find the product by ID
+      product = await Product.findById(productId);
+      if (product) {
+        productPrice = product.price; // Use product price from database if found
+      }
+    } catch (err) {
+      // If product ID is not a valid ObjectId, we'll use the price from the request
+      console.log('Using price from request for product:', productId);
     }
 
     let cart = await Cart.findOne({ user: req.userId });
@@ -46,15 +49,19 @@ router.post('/add', auth, async (req, res) => {
     }
 
     // Check if product already in cart
-    const existingItem = cart.items.find(item => item.product.toString() === productId);
+    const existingItem = cart.items.find(item => 
+      item.product && 
+      (item.product.toString() === productId || 
+       (typeof item.product === 'string' && item.product === productId)));
+    
     if (existingItem) {
       existingItem.quantity += quantity;
-      existingItem.price = product.price;
+      existingItem.price = productPrice;
     } else {
       cart.items.push({
         product: productId,
         quantity,
-        price: product.price
+        price: productPrice
       });
     }
 
@@ -70,18 +77,26 @@ router.post('/add', auth, async (req, res) => {
 // Update cart item quantity
 router.put('/update/:productId', auth, async (req, res) => {
   try {
-    const { quantity } = req.body;
+    const { quantity, price } = req.body;
     const { productId } = req.params;
 
-    // Validate product
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    let product;
+    let productPrice = price; // Use the price from the request if provided
 
-    // Check stock
-    if (product.stock < quantity) {
-      return res.status(400).json({ message: 'Insufficient stock' });
+    try {
+      // Try to find the product by ID
+      product = await Product.findById(productId);
+      if (product) {
+        productPrice = product.price; // Use product price from database if found
+        
+        // Check stock if product exists in database
+        if (product.stock < quantity) {
+          return res.status(400).json({ message: 'Insufficient stock' });
+        }
+      }
+    } catch (err) {
+      // If product ID is not a valid ObjectId, we'll use the price from the request
+      console.log('Using price from request for product update:', productId);
     }
 
     const cart = await Cart.findOne({ user: req.userId });
@@ -89,16 +104,23 @@ router.put('/update/:productId', auth, async (req, res) => {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    const cartItem = cart.items.find(item => item.product.toString() === productId);
+    const cartItem = cart.items.find(item => 
+      item.product && 
+      (item.product.toString() === productId || 
+       (typeof item.product === 'string' && item.product === productId)));
+       
     if (!cartItem) {
       return res.status(404).json({ message: 'Item not found in cart' });
     }
 
     cartItem.quantity = quantity;
-    cartItem.price = product.price;
+    if (productPrice) cartItem.price = productPrice;
 
     if (quantity <= 0) {
-      cart.items = cart.items.filter(item => item.product.toString() !== productId);
+      cart.items = cart.items.filter(item => 
+        item.product && 
+        item.product.toString() !== productId && 
+        (typeof item.product !== 'string' || item.product !== productId));
     }
 
     await cart.save();
@@ -118,7 +140,13 @@ router.delete('/remove/:productId', auth, async (req, res) => {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    cart.items = cart.items.filter(item => item.product.toString() !== req.params.productId);
+    // Handle both MongoDB ObjectId and string product IDs
+    cart.items = cart.items.filter(item => 
+      item.product && 
+      item.product.toString() !== req.params.productId && 
+      (typeof item.product !== 'string' || item.product !== req.params.productId)
+    );
+    
     await cart.save();
     await cart.populate('items.product');
     res.json(cart);

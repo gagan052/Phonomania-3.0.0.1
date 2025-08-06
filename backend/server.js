@@ -10,9 +10,21 @@ const app = express();
 // app.use(cors({ origin: 'http://localhost:3000' }));
 
 
+// app.use(cors({
+//   origin: "*",  // Allow all origins (change this to your frontend URL for security)
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"]
+// }));
+
 app.use(cors({
-  origin: "*",  // Allow all origins (change this to your frontend URL for security)
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: [
+    "http://localhost:5173",
+     "http://localhost:3000",
+     "https://phonomania-store-1-frontend.onrender.com/",
+     
+    ],
+  methods: "GET, POST, PUT, DELETE, OPTIONS",
+  credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -28,11 +40,16 @@ mongoose.connect(process.env.MONGODB_URI, {
   process.exit(1);
 });
 
+app.get('/test', (req, res) => {
+  res.send('API is working');
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/cart', require('./routes/cart'));
 app.use('/api/profile', require('./routes/profile'));
+app.use('/api/listings', require('./routes/listings'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

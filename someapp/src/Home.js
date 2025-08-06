@@ -5,15 +5,39 @@ import './Home.css';
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [userListings, setUserListings] = useState([]);
+  const [loadingListings, setLoadingListings] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    
+    // Fetch user listings for the featured section
+    fetchUserListings();
   }, []);
+  
+  const fetchUserListings = async () => {
+    try {
+      setLoadingListings(true);
+      const response = await fetch('https://localhost:8081/api/listings/');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user listings');
+      }
+      
+      const data = await response.json();
+      // Get up to 4 user listings to display
+      setUserListings(data.slice(0, 4));
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+    } finally {
+      setLoadingListings(false);
+    }
+  };
 
-  const handleAddToCart = async (productId, quantity) => {
+  const handleAddToCart = async (productId, quantity, price = null, isUserListing = false) => {
     if (!user) {
       navigate('/login');
       return;
@@ -26,25 +50,90 @@ const Home = () => {
         return;
       }
 
-      const response = await fetch('https://phonomania-backend.onrender.com/api/cart/add', {
+      // Show loading indicator
+      const productElement = document.getElementById(`add-to-cart-${productId}`);
+      if (productElement) {
+        productElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        productElement.disabled = true;
+      }
+      
+      // If it's a user listing, use the provided price, otherwise use the hardcoded price
+      const productPrice = isUserListing ? price : getProductPrice(productId);
+      
+      const response = await fetch('https://localhost:8081/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ productId, quantity })
+        body: JSON.stringify({ productId, quantity, price: productPrice })
       });
+      
+      // Helper function to get product price based on ID
+      function getProductPrice(id) {
+        const prices = {
+          'iphone14promax': 1099.99,
+          's23ultra': 1199.99,
+          'p30pro': 699.99,
+          'iphone14progold': 1099.99
+        };
+        return prices[id] || 999.99; // Default price if not found
+      }
 
       const data = await response.json();
+      
+      // Reset button state
+      if (productElement) {
+        productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+        productElement.disabled = false;
+      }
+      
       if (response.ok) {
-        window.dispatchEvent(new CustomEvent('cartUpdated'));
-        alert('Product added to cart successfully!');
+        // Trigger cart update event to refresh cart count in navbar
+        window.dispatchEvent(new CustomEvent('authStateChange'));
+        
+        // Show success message in a non-blocking way
+        const successMessage = document.createElement('div');
+        successMessage.className = 'alert alert-success position-fixed bottom-0 end-0 m-3';
+        successMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>Added to cart successfully!';
+        document.body.appendChild(successMessage);
+        
+        // Remove the message after 3 seconds
+        setTimeout(() => {
+          successMessage.remove();
+        }, 3000);
       } else {
-        alert(data.message || 'Failed to add product to cart. Please try again.');
+        // Show error message
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
+        errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${data.message || 'Failed to add product to cart'}`;
+        document.body.appendChild(errorMessage);
+        
+        // Remove the message after 3 seconds
+        setTimeout(() => {
+          errorMessage.remove();
+        }, 3000);
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Network error occurred. Please check your connection and try again.');
+      
+      // Reset button state if there was an error
+      const productElement = document.getElementById(`add-to-cart-${productId}`);
+      if (productElement) {
+        productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+        productElement.disabled = false;
+      }
+      
+      // Show error message
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
+      errorMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Network error. Please check your connection.';
+      document.body.appendChild(errorMessage);
+      
+      // Remove the message after 3 seconds
+      setTimeout(() => {
+        errorMessage.remove();
+      }, 3000);
     }
   };
      return(
@@ -58,8 +147,9 @@ const Home = () => {
                 <div className="col-md-6 pt-5 order-2 order-lg-1">
                  <h1 className="hero-heading">BEYOND YOUR IMAGINATION <br/><strong className="brand">PHONO MANIA</strong></h1> 
                  <h4 className="hero-subheading">Find the perfect smartphone at the perfect price</h4>
-                 <div className="mt-4">
+                 <div className="mt-4 d-flex gap-3">
                      <a href="#products" className="hero-btn">Explore Phones</a>
+                     <a href="/sell-device" className="hero-btn btn-amazon-secondary">Sell Your Device</a>
                  </div> 
                </div>
 
@@ -115,21 +205,129 @@ const Home = () => {
       </div>
       <br></br>
       <br></br>
+      {/* User Listings Section */}
+      <section className="user-listings-section py-5 bg-light">
+        <div className="container">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="section-title">Community Listings</h2>
+            <a href="/user-listings" className="btn btn-amazon">
+              <i className="fas fa-list me-2"></i>View All Listings
+            </a>
+          </div>
+          
+          {loadingListings ? (
+            <div className="text-center mb-4">
+              <i className="fas fa-spinner fa-spin me-2"></i> Loading user listings...
+            </div>
+          ) : userListings.length > 0 ? (
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+              {userListings.map(listing => (
+                <div className="col" key={listing._id}>
+                  <div className="card h-100">
+                    {listing.images && listing.images.length > 0 ? (
+                      <img 
+                        src={listing.images[0].url} 
+                        className="card-img-top" 
+                        alt={listing.name}
+                        style={{ height: '200px', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <img 
+                        src="https://via.placeholder.com/300x300?text=No+Image" 
+                        className="card-img-top" 
+                        alt="No image available"
+                        style={{ height: '200px', objectFit: 'contain' }}
+                      />
+                    )}
+                    <div className="card-body">
+                      <div className="d-flex align-items-center mb-1">
+                        <div className="text-warning me-1">
+                          {[...Array(5)].map((_, i) => (
+                            <i 
+                              key={i} 
+                              className={`fas fa-star ${i < Math.floor(listing.ratings || 4) ? '' : 'text-muted'}`}
+                            ></i>
+                          ))}
+                        </div>
+                        <small className="text-muted">({listing.numOfReviews || 0})</small>
+                      </div>
+                      <h5 className="card-title">{listing.name}</h5>
+                      <div className="price mb-2">${listing.price?.toFixed(2) || '999.99'}</div>
+                      <div className="text-success small mb-2">
+                        <i className="fas fa-check-circle me-1"></i> {listing.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                      </div>
+                      <p className="card-text small text-muted">
+                        {listing.description?.substring(0, 60)}{listing.description?.length > 60 ? '...' : ''}
+                      </p>
+                      <div className="d-grid gap-2">
+                        <button 
+                          id={`add-to-cart-${listing._id}`}
+                          className="btn btn-amazon" 
+                          onClick={() => handleAddToCart(listing._id, 1, listing.price, true)}
+                          disabled={listing.stock <= 0}
+                        >
+                          <i className="fas fa-shopping-cart me-1"></i> Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p>No community listings available yet.</p>
+              <a href="/sell-device" className="btn btn-amazon mt-2">
+                <i className="fas fa-tag me-2"></i>Be the first to sell
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+      
+      <br></br>
+      <br></br>
       <section id="products" className="product-section">
         <div className="container">
           <h2 className="section-title mb-4">Featured Smartphones</h2>
+          {loadingListings && (
+            <div className="text-center mb-4">
+              <i className="fas fa-spinner fa-spin me-2"></i> Loading user listings...
+            </div>
+          )}
           <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
             <div className="col">
               <div className="card" data-aos="zoom-in">
                 <div className="card-badge">Best Seller</div>
                 <img src="https://cdn.shopify.com/s/files/1/0568/5942/7015/products/MQ9P3HN_A_1.jpg?v=1662718624" className="card-img-top" alt="iPhone 14 Pro Max" />
                 <div className="card-body">
+                  <div className="d-flex align-items-center mb-1">
+                    <div className="text-warning me-1">
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star-half-alt"></i>
+                    </div>
+                    <small className="text-muted">(42)</small>
+                  </div>
                   <h5 className="card-title">iPhone 14 Pro Max</h5>
-                  <p className="card-text">Special Edition Only Available On Phonomania</p>
-                  <p className="price">₹1,20,999</p>
-                  <div className="d-flex justify-content-between">
-                    <button className="btn-cart" onClick={() => handleAddToCart('iphone14promax', 1)}>Add to Cart</button>
-                    <button className="btn btn-outline-secondary">Details</button>
+                  <div className="price mb-2">₹1,20,999</div>
+                  <div className="text-success small mb-2">
+                    <i className="fas fa-check-circle me-1"></i> In Stock
+                  </div>
+                  <p className="card-text small text-muted">Special Edition Only Available On Phonomania</p>
+                  <div className="d-grid gap-2">
+                    <button 
+                      id="add-to-cart-iphone14promax"
+                      className="btn btn-amazon" 
+                      onClick={() => handleAddToCart('iphone14promax', 1)}
+                    >
+                      <i className="fas fa-shopping-cart me-1"></i> Add to Cart
+                    </button>
+                    <button className="btn btn-amazon-secondary">
+                      <i className="fas fa-bolt me-1"></i> Buy Now
+                    </button>
                   </div>
                 </div>
               </div>
@@ -139,12 +337,33 @@ const Home = () => {
                 <div className="card-badge">New</div>
                 <img src="https://cdn1.smartprix.com/rx-izLSMVlI0-w1200-h1200/zLSMVlI0.jpg" className="card-img-top" alt="Samsung S23 Ultra" />
                 <div className="card-body">
+                  <div className="d-flex align-items-center mb-1">
+                    <div className="text-warning me-1">
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                    </div>
+                    <small className="text-muted">(36)</small>
+                  </div>
                   <h5 className="card-title">Samsung S23 Ultra</h5>
-                  <p className="card-text">Special Edition Only Available On Phonomania</p>
-                  <p className="price">₹1,27,999</p>
-                  <div className="d-flex justify-content-between">
-                    <button className="btn-cart" onClick={() => handleAddToCart('s23ultra', 1)}>Add to Cart</button>
-                    <button className="btn btn-outline-secondary">Details</button>
+                  <div className="price mb-2">₹1,27,999</div>
+                  <div className="text-success small mb-2">
+                    <i className="fas fa-check-circle me-1"></i> In Stock
+                  </div>
+                  <p className="card-text small text-muted">Special Edition Only Available On Phonomania</p>
+                  <div className="d-grid gap-2">
+                    <button 
+                      id="add-to-cart-s23ultra"
+                      className="btn btn-amazon" 
+                      onClick={() => handleAddToCart('s23ultra', 1)}
+                    >
+                      <i className="fas fa-shopping-cart me-1"></i> Add to Cart
+                    </button>
+                    <button className="btn btn-amazon-secondary">
+                      <i className="fas fa-bolt me-1"></i> Buy Now
+                    </button>
                   </div>
                 </div>
               </div>
@@ -153,12 +372,33 @@ const Home = () => {
               <div className="card" data-aos="fade-right">
                 <img src="https://images-cdn.ubuy.co.in/6340051ae566b8277211a103-huawei-p30-pro-128gb-8gb-ram-vog-l29.jpg" className="card-img-top" alt="Huawei P30 Pro" />
                 <div className="card-body">
+                  <div className="d-flex align-items-center mb-1">
+                    <div className="text-warning me-1">
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="far fa-star"></i>
+                    </div>
+                    <small className="text-muted">(28)</small>
+                  </div>
                   <h5 className="card-title">Huawei P30 Pro</h5>
-                  <p className="card-text">Special Edition Only Available On Phonomania</p>
-                  <p className="price">₹79,000</p>
-                  <div className="d-flex justify-content-between">
-                    <button className="btn-cart" onClick={() => handleAddToCart('p30pro', 1)}>Add to Cart</button>
-                    <button className="btn btn-outline-secondary">Details</button>
+                  <div className="price mb-2">₹79,000</div>
+                  <div className="text-success small mb-2">
+                    <i className="fas fa-check-circle me-1"></i> In Stock
+                  </div>
+                  <p className="card-text small text-muted">Special Edition Only Available On Phonomania</p>
+                  <div className="d-grid gap-2">
+                    <button 
+                      id="add-to-cart-p30pro"
+                      className="btn btn-amazon" 
+                      onClick={() => handleAddToCart('p30pro', 1)}
+                    >
+                      <i className="fas fa-shopping-cart me-1"></i> Add to Cart
+                    </button>
+                    <button className="btn btn-amazon-secondary">
+                      <i className="fas fa-bolt me-1"></i> Buy Now
+                    </button>
                   </div>
                 </div>
               </div>
@@ -168,16 +408,82 @@ const Home = () => {
                 <div className="card-badge">Limited</div>
                 <img src="https://leronza.com/wp-content/uploads/2022/07/A1_24K_Gold_iPhone_14_Pro___Pro_Max_Flora_Edition-min.jpg" className="card-img-top" alt="iPhone 14 Pro Gold Edition" />
                 <div className="card-body">
+                  <div className="d-flex align-items-center mb-1">
+                    <div className="text-warning me-1">
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                      <i className="fas fa-star"></i>
+                    </div>
+                    <small className="text-muted">(12)</small>
+                  </div>
                   <h5 className="card-title">iPhone 14 Pro Gold Edition</h5>
-                  <p className="card-text">Special Edition Only Available On Phonomania</p>
-                  <p className="price">₹10,15,79,000</p>
-                  <div className="d-flex justify-content-between">
-                    <button className="btn-cart" onClick={() => handleAddToCart('iphone14progold', 1)}>Add to Cart</button>
-                    <button className="btn btn-outline-secondary">Details</button>
+                  <div className="price mb-2">₹10,15,79,000</div>
+                  <div className="text-warning small mb-2">
+                    <i className="fas fa-exclamation-circle me-1"></i> Only 2 left in stock
+                  </div>
+                  <p className="card-text small text-muted">Special Edition Only Available On Phonomania</p>
+                  <div className="d-grid gap-2">
+                    <button 
+                      id="add-to-cart-iphone14progold"
+                      className="btn btn-amazon" 
+                      onClick={() => handleAddToCart('iphone14progold', 1)}
+                    >
+                      <i className="fas fa-shopping-cart me-1"></i> Add to Cart
+                    </button>
+                    <button className="btn btn-amazon-secondary">
+                      <i className="fas fa-bolt me-1"></i> Buy Now
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
+            {/* Display user listings */}
+            {userListings.map(listing => (
+              <div className="col" key={listing._id}>
+                <div className="card" data-aos="zoom-in">
+                  <div className="card-badge bg-info">User Listed</div>
+                  {listing.images && listing.images.length > 0 ? (
+                    <img src={listing.images[0].url} className="card-img-top" alt={listing.name} />
+                  ) : (
+                    <img src="https://via.placeholder.com/300x300?text=No+Image" className="card-img-top" alt="No image available" />
+                  )}
+                  <div className="card-body">
+                    <div className="d-flex align-items-center mb-1">
+                      <div className="text-warning me-1">
+                        <i className="fas fa-star"></i>
+                        <i className="fas fa-star"></i>
+                        <i className="fas fa-star"></i>
+                        <i className="fas fa-star"></i>
+                        <i className="far fa-star"></i>
+                      </div>
+                      <small className="text-muted">(New)</small>
+                    </div>
+                    <h5 className="card-title">{listing.name}</h5>
+                    <div className="price mb-2">₹{listing.price.toLocaleString()}</div>
+                    <div className="text-success small mb-2">
+                      <i className="fas fa-check-circle me-1"></i> {listing.condition} - {listing.stock} in Stock
+                    </div>
+                    <p className="card-text small text-muted">
+                      {listing.description ? (listing.description.substring(0, 60) + (listing.description.length > 60 ? '...' : '')) : 'No description available'}
+                    </p>
+                    <div className="d-grid gap-2">
+                      <button 
+                        id={`add-to-cart-${listing._id}`}
+                        className="btn btn-amazon" 
+                        onClick={() => handleAddToCart(listing._id, 1, listing.price, true)}
+                      >
+                        <i className="fas fa-shopping-cart me-1"></i> Add to Cart
+                      </button>
+                      <button className="btn btn-amazon-secondary">
+                        <i className="fas fa-bolt me-1"></i> Buy Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -191,7 +497,7 @@ const Home = () => {
                   <i className="fas fa-map-marker-alt" />
                   <div className="cta-text">
                     <h4>Find us</h4>
-                    <span>Sector-71, Mohali, chandigarh</span>
+                    <span>Ambala city, Haryana</span>
                   </div>
                 </div>
               </div>
@@ -200,7 +506,7 @@ const Home = () => {
                   <i className="fas fa-phone" />
                   <div className="cta-text">
                     <h4>Call us</h4>
-                    <span>8507931092</span>
+                    <span>9728422008</span>
                   </div>
                 </div>
               </div>
@@ -209,7 +515,7 @@ const Home = () => {
                   <i className="far fa-envelope-open" />
                   <div className="cta-text">
                     <h4>Mail us</h4>
-                    <span>rishuarora850727@gmail.com</span>
+                    <span>gagansaini7207@gmail.com</span>
                   </div>
                 </div>
               </div>

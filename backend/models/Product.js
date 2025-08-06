@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   productId: {
     type: String,
-    required: [true, 'Please enter product ID'],
     unique: true,
-    trim: true
+    trim: true,
+    sparse: true
   },
   name: {
     type: String,
@@ -47,6 +47,22 @@ const productSchema = new mongoose.Schema({
     required: [true, 'Please enter product stock'],
     maxLength: [5, 'Stock cannot exceed 5 characters'],
     default: 0
+  },
+  condition: {
+    type: String,
+    enum: {
+      values: ['New', 'Like New', 'Used', 'Refurbished'],
+      message: 'Please select a valid condition'
+    },
+    default: 'New'
+  },
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  isSold: {
+    type: Boolean,
+    default: false
   },
   ratings: {
     type: Number,

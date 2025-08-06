@@ -1,0 +1,212 @@
+/* Amazon-inspired theme for PhonomaniaStore */
+
+:root {
+  --amazon-primary: #131921; /* Dark blue/black navbar */
+  --amazon-secondary: #232f3e; /* Secondary dark blue */
+  --amazon-orange: #ff9900; /* Amazon orange */
+  --amazon-yellow: #febd69; /* Search box yellow */
+  --amazon-light-gray: #f3f3f3; /* Light background */
+  --amazon-button: #ffd814; /* Yellow button */
+  --amazon-button-hover: #f7ca00; /* Yellow button hover */
+  --amazon-link: #007185; /* Amazon link blue */
+  --amazon-success: #067D62; /* Amazon success green */
+  --amazon-warning: #c40000; /* Amazon red */
+}
+
+/* Global styles */
+body {
+  font-family: 'Amazon Ember', Arial, sans-serif;
+  background-color: var(--amazon-light-gray);
+  color: #333;
+}
+
+/* Navbar styling */
+.navbar {
+  background-color: var(--amazon-primary) !important;
+  padding: 0.5rem 1rem;
+  box-shadow: none;
+}
+
+.navbar-brand {
+  color: white !important;
+  font-weight: 700;
+}
+
+.nav-link {
+  color: white !important;
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+
+.nav-link:hover {
+  color: #ddd !important;
+}
+
+/* Search bar */
+.form-control {
+  border-radius: 4px 0 0 4px !important;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--amazon-yellow) !important;
+  border-color: var(--amazon-yellow) !important;
+  color: #111 !important;
+  border-radius: 0 4px 4px 0 !important;
+}
+
+.btn-primary:hover {
+  background-color: #f3a847 !important;
+  border-color: #f3a847 !important;
+}
+
+/* Product cards */
+.card {
+  border-radius: 0;
+  border: 1px solid #ddd;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--amazon-link);
+}
+
+.price {
+  color: #B12704;
+  font-weight: 700;
+}
+
+/* Buttons */
+.btn-amazon {
+  background-color: var(--amazon-button);
+  border-color: #c89411;
+  color: #111;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+}
+
+.btn-amazon:hover {
+  background-color: var(--amazon-button-hover);
+}
+
+.btn-amazon-secondary {
+  background-color: #e7e9ec;
+  border-color: #adb1b8 #a2a6ac #8d9096;
+  color: #111;
+  border-radius: 3px;
+}
+
+.btn-amazon-secondary:hover {
+  background-color: #d5d9d9;
+}
+
+/* Cart styling */
+.cart-container {
+  background-color: white;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.checkout-btn {
+  background-color: var(--amazon-button) !important;
+  border-color: #c89411 !important;
+  color: #111 !important;
+}
+
+.checkout-btn:hover {
+  background-color: var(--amazon-button-hover) !important;
+}
+
+/* Footer */
+.footer-section {
+  background-color: var(--amazon-secondary);
+  color: white;
+  padding-top: 2rem;
+}
+
+/* Hero section */
+#header {
+  background: white;
+  padding: 1rem 0;
+  margin-bottom: 0;
+}
+
+.hero-heading {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #333;
+}
+
+.hero-subheading {
+  font-size: 1rem;
+  color: #555;
+}
+
+.hero-btn {
+  background-color: var(--amazon-button);
+  color: #111;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.hero-btn:hover {
+  background-color: var(--amazon-button-hover);
+  text-decoration: none;
+  color: #111;
+}
+
+/* Image uploader styling */
+.image-uploader-container {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.image-uploader-dropzone {
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+}
+
+.image-uploader-dropzone:hover {
+  border-color: var(--amazon-link);
+}
+
+/* Success messages */
+.success-icon {
+  color: var(--amazon-success);
+}
+
+/* Error messages */
+.error-message {
+  color: var(--amazon-warning);
+}
+
+/* Sell device form */
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+  
+  .hero-heading {
+    font-size: 1.5rem;
+  }
+}

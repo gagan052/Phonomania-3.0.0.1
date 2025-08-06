@@ -70,7 +70,7 @@ const Contact = () =>{
                      </div>
                      <div>
                        <h5 className="mb-1">Our Location</h5>
-                       <p className="mb-0">Sector-71, Mohali, Chandigarh</p>
+                       <p className="mb-0">Ambala city , Haryana</p>
                      </div>
                    </div>
                  </div>
@@ -81,7 +81,7 @@ const Contact = () =>{
                      </div>
                      <div>
                        <h5 className="mb-1">Call Us</h5>
-                       <p className="mb-0">+91 8507931092</p>
+                       <p className="mb-0">+91 9728422008</p>
                      </div>
                    </div>
                  </div>
@@ -92,7 +92,7 @@ const Contact = () =>{
                      </div>
                      <div>
                        <h5 className="mb-1">Email Us</h5>
-                       <p className="mb-0">rishuarora850727@gmail.com</p>
+                       <p className="mb-0">gagansaini7207@gmail.com</p>
                      </div>
                    </div>
                  </div>
