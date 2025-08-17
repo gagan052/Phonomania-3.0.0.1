@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
 import './Home.css';
-import axios from "axios";
 
 import apiService from './utils/new-request';
 const Home = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  // const navigate = useNavigate(); // Used in handleAddToCart
+  // const [user, setUser] = useState(null); // Used to check login status
   const [userListings, setUserListings] = useState([]);
-  const [loadingListings, setLoadingListings] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -23,7 +22,7 @@ const Home = () => {
   
   const fetchUserListings = async () => {
     try {
-      setLoadingListings(true);
+      setIsLoading(true);
       const response = await apiService.getUserListings();
       
       // Get up to 4 user listings to display
@@ -31,33 +30,11 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching user listings:', error);
     } finally {
-      setLoadingListings(false);
+      setIsLoading(false);
     }
   };
 
-  const API_URL = process.env.REACT_APP_API_URL;
-
-const addToCart = async (productId) => {
-  try {
-    const res = await fetch(`${API_URL}/cart`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ productId, price: 0 }), // Setting default price to 0
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to add to cart");
-    }
-
-    const data = await res.json();
-    console.log("Added to cart:", data);
-  } catch (err) {
-    console.error("Error adding to cart:", err);
-  }
-};
+  // We're using handleAddToCart function below
 
 
   // const handleAddToCart = async (productId, quantity, price = null, isUserListing = false) => {
@@ -69,6 +46,8 @@ const addToCart = async (productId) => {
     alert("You must be logged in to add items to cart!");
     return;
   }
+
+  const API_URL = process.env.REACT_APP_API_URL;
 
   try {
     const res = await fetch(`${API_URL}/cart`, {
@@ -272,7 +251,7 @@ const addToCart = async (productId) => {
             </a>
           </div>
           
-          {loadingListings ? (
+          {isLoading ? (
             <div className="text-center mb-4">
               <i className="fas fa-spinner fa-spin me-2"></i> Loading user listings...
             </div>
@@ -347,7 +326,7 @@ const addToCart = async (productId) => {
       <section id="products" className="product-section">
         <div className="container">
           <h2 className="section-title mb-4">Featured Smartphones</h2>
-          {loadingListings && (
+          {isLoading && (
             <div className="text-center mb-4">
               <i className="fas fa-spinner fa-spin me-2"></i> Loading user listings...
             </div>
