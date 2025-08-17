@@ -9,6 +9,7 @@ app.use(cors({
   origin: [
     "http://localhost:3001",
      "http://localhost:3000",
+     "https://phonomania-2-0-0-1-f.onrender.com/",
      "https://phonomania-store-1-frontend.onrender.com/",
      
     ],
