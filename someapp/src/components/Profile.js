@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 import apiService from '../utils/new-request';
+import ImageUploader from './ImageUploader';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -16,11 +17,7 @@ const Profile = () => {
     newPassword: ''
   });
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -39,6 +36,7 @@ const Profile = () => {
         newPassword: ''
       });
     } catch (error) {
+      console.error('Error fetching profile:', error);
       if (error.response && error.response.status === 401) {
         navigate('/login');
       } else if (error.response) {
@@ -49,7 +47,11 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -63,7 +65,8 @@ const Profile = () => {
     try {
       const userData = {
         name: formData.name,
-        email: formData.email
+        email: formData.email,
+        avatar: formData.avatar
       };
       
       const response = await apiService.updateProfile(userData);
@@ -116,7 +119,13 @@ const Profile = () => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <img src={user.avatar || 'https://via.placeholder.com/150'} alt="Profile" className="profile-avatar" />
+        <div className="profile-avatar">
+          <img 
+            src={user?.avatar || 'https://res.cloudinary.com/dknvsbuyy/image/upload/v1686314044/avatars/default_user_f5ra1b.png'} 
+            alt={user?.name} 
+            className="avatar-image"
+          />
+        </div>
         <h2>{user.name}</h2>
         <p className="user-stats">
           <span><i className="fas fa-shopping-cart"></i> Orders: 12</span>
@@ -161,15 +170,37 @@ const Profile = () => {
               />
             </div>
             <div className="form-group">
-              <label>Email:</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Profile Image:</label>
+                <div className="profile-image-edit">
+                  <img 
+                    src={formData.avatar || 'https://res.cloudinary.com/dknvsbuyy/image/upload/v1686314044/avatars/default_user_f5ra1b.png'} 
+                    alt="Profile" 
+                    className="edit-avatar-preview" 
+                  />
+                  <div className="avatar-upload-controls">
+                    <ImageUploader 
+                      onImageUpload={(images) => {
+                        if (images && images.length > 0) {
+                          setFormData({...formData, avatar: images[0].url});
+                        }
+                      }} 
+                      folder="avatars" 
+                      maxFiles={1} 
+                    />
+                  </div>
+                </div>
+              </div>
             <div className="button-group">
               <button type="submit" className="btn-save">Save Changes</button>
               <button type="button" className="btn-cancel" onClick={() => setEditMode(false)}>Cancel</button>

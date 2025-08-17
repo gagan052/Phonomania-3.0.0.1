@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Cart.css';
 
@@ -8,11 +8,7 @@ const UserListings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
-
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -21,24 +17,33 @@ const UserListings = () => {
       }
 
       setLoading(true);
-      const response = await fetch('https://localhost:8081/api/listings/my-listings', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/listings/my-listings`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch your listings');
+        throw new Error('Failed to fetch listings');
       }
 
       const data = await response.json();
       setListings(data);
     } catch (error) {
-      setError(error.message || 'Something went wrong');
+      console.error('Error fetching listings:', error);
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      } else {
+        setError('Failed to load listings. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const handleDeleteListing = async (listingId) => {
     if (!window.confirm('Are you sure you want to delete this listing?')) {
@@ -52,7 +57,7 @@ const UserListings = () => {
         return;
       }
 
-      const response = await fetch(`https://localhost:8081/api/listings/${listingId}`, {
+      const response = await fetch(`${process.env.API_BASE_URL}/listings/${listingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -146,11 +151,18 @@ const UserListings = () => {
               {listings.map(listing => (
                 <div className="col-md-6 col-lg-4 mb-4" key={listing._id}>
                   <div className="card h-100">
-                    {listing.images && listing.images.length > 0 && (
+                    {listing.images && listing.images.length > 0 ? (
                       <img 
                         src={listing.images[0].url} 
                         className="card-img-top" 
                         alt={listing.name} 
+                        style={{ height: '200px', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <img 
+                        src="https://placehold.co/300x300?text=No+Image" 
+                        className="card-img-top" 
+                        alt="Product placeholder"
                         style={{ height: '200px', objectFit: 'contain' }}
                       />
                     )}

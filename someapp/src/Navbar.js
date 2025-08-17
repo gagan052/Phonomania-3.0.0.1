@@ -13,6 +13,7 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
+    // Check if user is logged in
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -31,17 +32,20 @@ const Navbar = () => {
       }
     };
 
-    window.addEventListener('authStateChange', handleAuthChange);
-    return () => window.removeEventListener('authStateChange', handleAuthChange);
-
+    // Handle clicking outside of dropdown
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
 
+    // Add event listeners
+    window.addEventListener('authStateChange', handleAuthChange);
     document.addEventListener('click', handleClickOutside);
+    
+    // Clean up event listeners
     return () => {
+      window.removeEventListener('authStateChange', handleAuthChange);
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
@@ -78,7 +82,7 @@ const Navbar = () => {
               <span className="navbar-toggler-icon"></span>
             </button>
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
-              <form className="d-flex mx-auto" style={{width: '60%'}} onSubmit={(e) => {
+              <form className="d-flex mx-auto search-form" onSubmit={(e) => {
                 e.preventDefault();
                 const searchInput = e.target.querySelector('input[type="search"]');
                 const categorySelect = e.target.querySelector('select');
@@ -96,51 +100,43 @@ const Navbar = () => {
                     <option>Accessories</option>
                     <option>Used</option>
                   </select>
-                  <input className="form-control" type="search" placeholder="Search for smartphones, accessories, and more..." aria-label="Search" required />
+                  <input className="form-control" type="search" placeholder="Search products..." aria-label="Search" required />
                   <button className="btn btn-primary" type="submit">
                     <i className="fas fa-search"></i>
                   </button>
                 </div>
               </form>
               <ul className="navbar-nav ms-auto mb-2 mb-lg-0 text-white">
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <NavLink className="nav-link" aria-current="page" to="/">
-                    <div className="d-flex flex-column align-items-center align-items-lg-start">
-                      <small className="text-muted d-none d-lg-block">Hello</small>
+                    <div className="nav-icon-container">
+                      <i className="fas fa-home"></i>
                       <span>Home</span>
                     </div>
                   </NavLink>
-                </li>
+                </li> */}
                 <li className="nav-item">
                   <NavLink className="nav-link" to="/user-listings">
-                    <div className="d-flex flex-column align-items-center align-items-lg-start">
-                      <small className="text-muted d-none d-lg-block">Browse</small>
-                      <span>User Listings</span>
-                    </div>
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/Contact">
-                    <div className="d-flex flex-column align-items-center align-items-lg-start">
-                      <small className="text-muted d-none d-lg-block">Help</small>
-                      <span>Contact</span>
+                    <div className="nav-icon-container">
+                      <i className="fas fa-store"></i>
+                      <span>Listings</span>
                     </div>
                   </NavLink>
                 </li>
                 <li className="nav-item">
                   <NavLink className="nav-link" to="/sell-device">
-                    <div className="d-flex flex-column align-items-center align-items-lg-start">
-                      <small className="text-muted d-none d-lg-block">List Your</small>
-                      <span><i className="fas fa-tag me-1"></i>Sell</span>
+                    <div className="nav-icon-container">
+                      <i className="fas fa-tag"></i>
+                      <span>Sell</span>
                     </div>
                   </NavLink>
                 </li>
                 {user && (
                 <li className="nav-item">
                   <NavLink className="nav-link" to="/my-listings">
-                    <div className="d-flex flex-column align-items-center align-items-lg-start">
-                      <small className="text-muted d-none d-lg-block">Your</small>
-                      <span><i className="fas fa-list me-1"></i>My Listings</span>
+                    <div className="nav-icon-container">
+                      <i className="fas fa-list"></i>
+                      <span>My Listings</span>
                     </div>
                   </NavLink>
                 </li>
@@ -149,24 +145,19 @@ const Navbar = () => {
                   <>
                     <li className="nav-item">
                       <NavLink className="nav-link" to="/cart">
-                        <div className="d-flex flex-column align-items-center align-items-lg-start">
-                          <small className="text-muted d-none d-lg-block">Cart</small>
-                          <span className="position-relative">
-                            <i className="fas fa-shopping-cart"></i>
-                            {cartCount > 0 && (
-                              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
-                                {cartCount}
-                              </span>
-                            )}
-                          </span>
+                        <div className="nav-icon-container">
+                          <i className="fas fa-shopping-cart"></i>
+                          <span>Cart</span>
+                          {cartCount > 0 && (
+                            <span className="cart-badge">{cartCount}</span>
+                          )}
                         </div>
                       </NavLink>
                     </li>
                     <li className="nav-item dropdown" ref={dropdownRef}>
-                      <a 
+                      <button 
                         className={`nav-link dropdown-toggle ${isDropdownOpen ? 'show' : ''}`}
-                        href="#"
-                        role="button"
+                        type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -174,18 +165,18 @@ const Navbar = () => {
                         }}
                         aria-expanded={isDropdownOpen}
                       >
-                        <div className="d-flex flex-column align-items-center align-items-lg-start">
-                          <small className="text-muted d-none d-lg-block">Hello, {user.name?.split(' ')[0]}</small>
-                          <span>Account <i className="fas fa-user"></i></span>
+                        <div className="nav-icon-container">
+                          <i className="fas fa-user"></i>
+                          <span>{user.name?.split(' ')[0]}</span>
                         </div>
-                      </a>
+                      </button>
                       <ul className={`dropdown-menu dropdown-menu-end ${isDropdownOpen ? 'show' : ''}`}>
-                        <li><NavLink className="dropdown-item" to="/profile" onClick={() => setIsDropdownOpen(false)}>Profile</NavLink></li>
+                        <li><NavLink className="dropdown-item" to="/profile" onClick={() => setIsDropdownOpen(false)}><i className="fas fa-id-card me-2"></i>Profile</NavLink></li>
                         <li><hr className="dropdown-divider" /></li>
                         <li><button className="dropdown-item" onClick={() => {
                           setIsDropdownOpen(false);
                           handleLogout();
-                        }}>Logout</button></li>
+                        }}><i className="fas fa-sign-out-alt me-2"></i>Logout</button></li>
                       </ul>
                     </li>
                   </>
@@ -193,9 +184,9 @@ const Navbar = () => {
                   <>
                     <li className="nav-item">
                       <NavLink className="nav-link" to="/login">
-                        <div className="d-flex flex-column align-items-center align-items-lg-start">
-                          <small className="text-muted d-none d-lg-block">Hello, Sign in</small>
-                          <span>Account & Lists</span>
+                        <div className="nav-icon-container">
+                          <i className="fas fa-sign-in-alt"></i>
+                          <span>Login</span>
                         </div>
                       </NavLink>
                     </li>

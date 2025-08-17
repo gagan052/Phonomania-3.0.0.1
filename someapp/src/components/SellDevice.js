@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ImageUploader from './ImageUploader';
+import apiService from '../utils/new-request';
 import './Cart.css';
 import '../amazon-theme.css';
 
@@ -74,55 +75,48 @@ const SellDevice = () => {
       
       console.log('Submitting product data:', productData);
 
-      let response;
-      try {
-        response = await fetch('https://localhost:8081/api/listings/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(productData)
-        });
-      } catch (fetchError) {
-        console.error('Network error during fetch:', fetchError);
-        throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
-      }
+      // // Use the imported apiService directly
+      // const response = await apiService.createListing(productData);
+      // console.log('API response:', response);
 
-      // Check if the response is JSON before parsing
-      const contentType = response.headers.get('content-type');
-      let data;
-      
-      try {
-        if (contentType && contentType.includes('application/json')) {
-          data = await response.json();
-        } else {
-          // If response is not JSON (e.g., HTML error page), handle accordingly
-          const textResponse = await response.text();
-          console.error('Server returned non-JSON response:', textResponse);
-          throw new Error('Server returned an invalid response. Please try again later.');
-        }
-      } catch (jsonError) {
-        console.error('Error parsing JSON response:', jsonError);
-        throw new Error('Failed to process the server response. The server might be experiencing issues.');
-      }
-      console.log('API response:', data);
+      // if (response.success) {
+      //   setSuccess(true);
+      //   setFormData({
+      //     name: '',
+      //     description: '',
+      //     price: '',
+      //     category: 'Smartphones',
+      //     brand: '',
+      //     stock: '1',
+      //     condition: 'Used'
+      //   });
+      //   setUploadedImages([]);
+      // } else {
+      //   throw new Error(response.message || 'Failed to list your device');
+      // }
 
-      if (response.ok) {
-        setSuccess(true);
-        setFormData({
-          name: '',
-          description: '',
-          price: '',
-          category: 'Smartphones',
-          brand: '',
-          stock: '1',
-          condition: 'Used'
-        });
-        setUploadedImages([]);
-      } else {
-        throw new Error(data.message || 'Failed to list your device');
-      }
+
+      // Use the imported apiService directly
+const response = await apiService.createListing(productData);
+console.log('API response:', response);
+
+// Check backend success flag
+if (response.status === 201) {
+  setSuccess(true);
+  setFormData({
+    name: '',
+    description: '',
+    price: '',
+    category: 'Smartphones',
+    brand: '',
+    stock: '1',
+    condition: 'Used'
+  });
+  setUploadedImages([]);
+} else {
+  throw new Error(response.data?.message || 'Failed to list your device');
+}
+
     } catch (error) {
       console.error('Error submitting listing:', error);
       // Provide more specific error messages based on the error

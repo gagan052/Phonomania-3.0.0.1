@@ -7,7 +7,7 @@ const User = require('../models/User');
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, avatar } = req.body;
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -44,7 +44,8 @@ router.post('/register', async (req, res) => {
     user = new User({
       name,
       email: email.toLowerCase(),
-      password
+      password,
+      avatar: avatar || undefined // Use the provided avatar or let it default
     });
 
     try {

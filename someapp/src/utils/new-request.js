@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL for the backend API
-const API_BASE_URL = 'https://phonomania-2-0-0-1.onrender.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 // Create axios instance with default config
 const api = axios.create({
@@ -67,8 +67,8 @@ const apiService = {
   // Cart
   getCart: () => api.get('/cart'),
   addToCart: (productId, quantity = 1, price = null) => api.post('/cart', { productId, quantity, price }),
-  updateCartItem: (itemId, quantity) => api.put(`/cart/${itemId}`, { quantity }),
-  removeFromCart: (itemId) => api.delete(`/cart/${itemId}`),
+  updateCartItem: (productId, quantity) => api.put(`/cart/update/${productId}`, { quantity }),
+  removeFromCart: (productId) => api.delete(`/cart/remove/${productId}`),
   
   // User listings
   getUserListings: () => api.get('/listings'),

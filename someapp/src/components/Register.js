@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
 import apiService from '../utils/new-request';
+import ImageUploader from './ImageUploader';
 
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    avatar: ''
   });
   const [error, setError] = useState('');
 
@@ -17,6 +19,15 @@ const Register = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleImageUpload = (uploadedImages) => {
+    if (uploadedImages && uploadedImages.length > 0) {
+      setFormData({
+        ...formData,
+        avatar: uploadedImages[0].url
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -80,6 +91,33 @@ const Register = () => {
               required
               minLength="8"
             />
+          </div>
+          <div className="form-group">
+            <label>Profile Image:</label>
+            <div className="profile-image-upload">
+              {formData.avatar ? (
+                <div className="preview-container">
+                  <img 
+                    src={formData.avatar} 
+                    alt="Profile Preview" 
+                    className="profile-image-preview" 
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-image-btn"
+                    onClick={() => setFormData({...formData, avatar: ''})}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <ImageUploader 
+                  onImageUpload={handleImageUpload} 
+                  folder="avatars" 
+                  maxFiles={1} 
+                />
+              )}
+            </div>
           </div>
           <button type="submit" className="auth-button">Register</button>
         </form>

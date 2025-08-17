@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
 import './Home.css';
+import axios from "axios";
+
 import apiService from './utils/new-request';
 const Home = () => {
   const navigate = useNavigate();
@@ -33,106 +35,164 @@ const Home = () => {
     }
   };
 
-  const handleAddToCart = async (productId, quantity, price = null, isUserListing = false) => {
-    if (!user) {
-      navigate('/login');
-      return;
+  const API_URL = process.env.REACT_APP_API_URL;
+
+const addToCart = async (productId) => {
+  try {
+    const res = await fetch(`${API_URL}/cart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ productId, price: 0 }), // Setting default price to 0
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to add to cart");
     }
 
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
+    const data = await res.json();
+    console.log("Added to cart:", data);
+  } catch (err) {
+    console.error("Error adding to cart:", err);
+  }
+};
 
-      // Show loading indicator
-      const productElement = document.getElementById(`add-to-cart-${productId}`);
-      if (productElement) {
-        productElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-        productElement.disabled = true;
-      }
-      
-      // If it's a user listing, use the provided price, otherwise use the hardcoded price
-      const productPrice = isUserListing ? price : getProductPrice(productId);
-      
-      const response = await apiService.addToCart(productId, quantity, productPrice);
-      
-      // Helper function to get product price based on ID
-      function getProductPrice(id) {
-        const prices = {
-          'iphone14promax': 1099.99,
-          's23ultra': 1199.99,
-          'p30pro': 699.99,
-          'iphone14progold': 1099.99
-        };
-        return prices[id] || 999.99; // Default price if not found
-      }
 
-      // Reset button state
-      if (productElement) {
-        productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-        productElement.disabled = false;
-      }
-      
-      if (response.status === 200 || response.status === 201) {
-        // Trigger cart update event to refresh cart count in navbar
-        window.dispatchEvent(new CustomEvent('authStateChange'));
-        
-        // Show success message in a non-blocking way
-        const successMessage = document.createElement('div');
-        successMessage.className = 'alert alert-success position-fixed bottom-0 end-0 m-3';
-        successMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>Added to cart successfully!';
-        document.body.appendChild(successMessage);
-        
-        // Remove the message after 3 seconds
-        setTimeout(() => {
-          successMessage.remove();
-        }, 3000);
-      } else {
-        // Show error message
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
-        errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${response.data?.message || 'Failed to add product to cart'}`;
-        document.body.appendChild(errorMessage);
-        
-        // Remove the message after 3 seconds
-        setTimeout(() => {
-          errorMessage.remove();
-        }, 3000);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      
-      // Reset button state if there was an error
-      const productElement = document.getElementById(`add-to-cart-${productId}`);
-      if (productElement) {
-        productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-        productElement.disabled = false;
-      }
-      
-      // Show error message
-      const errorMessage = document.createElement('div');
-      errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
-      let errorText = 'Failed to add product to cart';
-      
-      if (error.response && error.response.data) {
-        errorText = error.response.data.message || errorText;
-      } else if (error.message) {
-        errorText = error.message;
-      } else {
-        errorText = 'Network error. Please check your connection.';
-      }
-      
-      errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${errorText}`;
-      document.body.appendChild(errorMessage);
-      
-      // Remove the message after 3 seconds
-      setTimeout(() => {
-        errorMessage.remove();
-      }, 3000);
+  // const handleAddToCart = async (productId, quantity, price = null, isUserListing = false) => {
+
+    const handleAddToCart = async (productId) => {
+  const token = localStorage.getItem("token"); // Make sure token exists
+
+  if (!token) {
+    alert("You must be logged in to add items to cart!");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/cart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Must include 'Bearer '
+      },
+      body: JSON.stringify({ productId, price: 0 }), // Setting default price to 0
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to add to cart");
     }
-  };
+
+    const data = await res.json();
+    console.log("Added to cart:", data);
+    alert("Product added to cart successfully!");
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    alert(`Failed to add to cart: ${error.message}`);
+  }
+};
+
+  //   if (!user) {
+  //     navigate('/login');
+  //     return;
+  //   }
+
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       navigate('/login');
+  //       return;
+  //     }
+
+  //     // Show loading indicator
+  //     const productElement = document.getElementById(`add-to-cart-${productId}`);
+  //     if (productElement) {
+  //       productElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+  //       productElement.disabled = true;
+  //     }
+      
+  //     // If it's a user listing, use the provided price, otherwise use the hardcoded price
+  //     const productPrice = isUserListing ? price : getProductPrice(productId);
+      
+  //     const response = await apiService.addToCart(productId, quantity, productPrice);
+      
+  //     // Helper function to get product price based on ID
+  //     function getProductPrice(id) {
+  //       const prices = {
+  //         'iphone14promax': 1099.99,
+  //         's23ultra': 1199.99,
+  //         'p30pro': 699.99,
+  //         'iphone14progold': 1099.99
+  //       };
+  //       return prices[id] || 999.99; // Default price if not found
+  //     }
+
+  //     // Reset button state
+  //     if (productElement) {
+  //       productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+  //       productElement.disabled = false;
+  //     }
+      
+  //     if (response.status === 200 || response.status === 201) {
+  //       // Trigger cart update event to refresh cart count in navbar
+  //       window.dispatchEvent(new CustomEvent('authStateChange'));
+        
+  //       // Show success message in a non-blocking way
+  //       const successMessage = document.createElement('div');
+  //       successMessage.className = 'alert alert-success position-fixed bottom-0 end-0 m-3';
+  //       successMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>Added to cart successfully!';
+  //       document.body.appendChild(successMessage);
+        
+  //       // Remove the message after 3 seconds
+  //       setTimeout(() => {
+  //         successMessage.remove();
+  //       }, 3000);
+  //     } else {
+  //       // Show error message
+  //       const errorMessage = document.createElement('div');
+  //       errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
+  //       errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${response.data?.message || 'Failed to add product to cart'}`;
+  //       document.body.appendChild(errorMessage);
+        
+  //       // Remove the message after 3 seconds
+  //       setTimeout(() => {
+  //         errorMessage.remove();
+  //       }, 3000);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error adding to cart:', error);
+      
+  //     // Reset button state if there was an error
+  //     const productElement = document.getElementById(`add-to-cart-${productId}`);
+  //     if (productElement) {
+  //       productElement.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+  //       productElement.disabled = false;
+  //     }
+      
+  //     // Show error message
+  //     const errorMessage = document.createElement('div');
+  //     errorMessage.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
+  //     let errorText = 'Failed to add product to cart';
+      
+  //     if (error.response && error.response.data) {
+  //       errorText = error.response.data.message || errorText;
+  //     } else if (error.message) {
+  //       errorText = error.message;
+  //     } else {
+  //       errorText = 'Network error. Please check your connection.';
+  //     }
+      
+  //     errorMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${errorText}`;
+  //     document.body.appendChild(errorMessage);
+      
+  //     // Remove the message after 3 seconds
+  //     setTimeout(() => {
+  //       errorMessage.remove();
+  //     }, 3000);
+  //   }
+  // };
      return(
         <>
         <section id="header">
@@ -176,14 +236,14 @@ const Home = () => {
               </div>
             </div>
             <div className="carousel-item">
-              <img src="http://blog.olx.com.pk/wp-content/uploads/2022/02/Mobile-phones-1.jpg" className="d-block w-100" alt="Latest smartphone models" />
+              <img src="https://placehold.co/1200x400?text=Latest+Smartphone+Models" className="d-block w-100" alt="Latest smartphone models" />
               <div className="carousel-caption d-none d-md-block">
                 <h3>Latest Models Available</h3>
                 <p>Get the newest technology at affordable prices</p>
               </div>
             </div>
             <div className="carousel-item">
-              <img src="https://cdn.w600.comps.canstockphoto.com/smartphones-and-mobile-applications-clipart_csp13776419.jpg" className="d-block w-100" alt="Smartphone applications" />
+              <img src="https://placehold.co/1200x400?text=Smartphone+Applications" className="d-block w-100" alt="Smartphone applications" />
               <div className="carousel-caption d-none d-md-block">
                 <h3>Fully Tested & Verified</h3>
                 <p>All our devices undergo rigorous quality checks</p>
@@ -230,9 +290,9 @@ const Home = () => {
                       />
                     ) : (
                       <img 
-                        src="https://via.placeholder.com/300x300?text=No+Image" 
+                        src="https://placehold.co/300x300?text=No+Image" 
                         className="card-img-top" 
-                        alt="No image available"
+                        alt="Product placeholder"
                         style={{ height: '200px', objectFit: 'contain' }}
                       />
                     )}
@@ -403,7 +463,7 @@ const Home = () => {
             <div className="col">
               <div className="card" data-aos="fade-left">
                 <div className="card-badge">Limited</div>
-                <img src="https://leronza.com/wp-content/uploads/2022/07/A1_24K_Gold_iPhone_14_Pro___Pro_Max_Flora_Edition-min.jpg" className="card-img-top" alt="iPhone 14 Pro Gold Edition" />
+                <img src="https://placehold.co/300x300?text=iPhone+14+Pro+Gold+Edition" className="card-img-top" alt="iPhone 14 Pro Gold Edition" />
                 <div className="card-body">
                   <div className="d-flex align-items-center mb-1">
                     <div className="text-warning me-1">
@@ -444,7 +504,7 @@ const Home = () => {
                   {listing.images && listing.images.length > 0 ? (
                     <img src={listing.images[0].url} className="card-img-top" alt={listing.name} />
                   ) : (
-                    <img src="https://via.placeholder.com/300x300?text=No+Image" className="card-img-top" alt="No image available" />
+                    <img src="https://placehold.co/300x300?text=No+Image" className="card-img-top" alt="Product placeholder" />
                   )}
                   <div className="card-body">
                     <div className="d-flex align-items-center mb-1">
@@ -530,9 +590,9 @@ const Home = () => {
                   </div>
                   <div className="footer-social-icon">
                     <span>Follow us</span>
-                    <a href="#"><img src="https://img.icons8.com/fluency/2x/facebook-new.png" className="fab fa-facebook-f facebook-bg" /></a>
-                    <a href="#"><img src="https://img.icons8.com/color/2x/whatsapp.png" className="fab fa-twitter twitter-bg" /></a>
-                    <a href="#"><img src="https://img.icons8.com/fluency/2x/google-logo.png" className="fab fa-google-plus-g google-bg" /></a>
+                    <button onClick={() => window.open('https://facebook.com', '_blank')} className="btn p-0 border-0 bg-transparent"><img src="https://img.icons8.com/fluency/2x/facebook-new.png" className="fab fa-facebook-f facebook-bg" alt="Facebook" /></button>
+                    <button onClick={() => window.open('https://whatsapp.com', '_blank')} className="btn p-0 border-0 bg-transparent"><img src="https://img.icons8.com/color/2x/whatsapp.png" className="fab fa-twitter twitter-bg" alt="WhatsApp" /></button>
+                    <button onClick={() => window.open('https://google.com', '_blank')} className="btn p-0 border-0 bg-transparent"><img src="https://img.icons8.com/fluency/2x/google-logo.png" className="fab fa-google-plus-g google-bg" alt="Google" /></button>
                   </div>
                 </div>
               </div>
@@ -542,16 +602,16 @@ const Home = () => {
                     <h3>Useful Links</h3>
                   </div>
                   <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">about</a></li>
-                    <li><a href="#">services</a></li>
-                    <li><a href="#">portfolio</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">About us</a></li>
-                    <li><a href="#">Our Services</a></li>
-                    <li><a href="#">Expert Team</a></li>
-                    <li><a href="#">Contact us</a></li>
-                    <li><a href="#">Latest News</a></li>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/services">Services</a></li>
+                    <li><a href="/portfolio">Portfolio</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/about-us">About us</a></li>
+                    <li><a href="/services">Our Services</a></li>
+                    <li><a href="/team">Expert Team</a></li>
+                    <li><a href="/contact">Contact us</a></li>
+                    <li><a href="/news">Latest News</a></li>
                   </ul>
                 </div>
               </div>
@@ -579,7 +639,7 @@ const Home = () => {
             <div className="row">
               <div className="col-xl-6 col-lg-6 text-center text-lg-left">
                 <div className="copyright-text">
-                <p><center>Copyright © 2023, All Right Reserved <a href="#">Rishu</a></center></p>
+                <div className="text-center">Copyright © 2023, All Right Reserved <a href="https://github.com/gagan052/Phonomania-2.0.0.1">Rishu</a></div>
                 </div>
               </div>
               <div className="col-xl-6 col-lg-6 d-none d-lg-block text-right">

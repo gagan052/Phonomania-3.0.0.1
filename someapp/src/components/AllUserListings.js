@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import '../Home.css';
 import '../amazon-theme.css';
@@ -16,15 +16,11 @@ const AllUserListings = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    fetchAllListings();
-  }, [sortOption, filterCondition]);
-
-  const fetchAllListings = async () => {
+  const fetchAllListings = useCallback(async () => {
     try {
       setLoading(true);
       // Use the dedicated endpoint for user listings
-      const response = await fetch('https://localhost:8081/api/products?category=Used');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/products?category=Used`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch user listings');
@@ -42,33 +38,26 @@ const AllUserListings = () => {
       }
       
       // Apply sorting
-      switch(sortOption) {
-        case 'price-low':
-          userListings.sort((a, b) => (a.price || 0) - (b.price || 0));
-          break;
-        case 'price-high':
-          userListings.sort((a, b) => (b.price || 0) - (a.price || 0));
-          break;
-        case 'rating':
-          userListings.sort((a, b) => (b.ratings || 0) - (a.ratings || 0));
-          break;
-        case 'newest':
-        default:
-          // Assuming newer products have higher IDs or there's a createdAt field
-          userListings.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-          break;
+      if (sortOption === 'price-low-high') {
+        userListings.sort((a, b) => a.price - b.price);
+      } else if (sortOption === 'price-high-low') {
+        userListings.sort((a, b) => b.price - a.price);
+      } else if (sortOption === 'newest') {
+        userListings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       }
       
       setListings(userListings);
-
-
     } catch (error) {
-      console.error('Error fetching listings:', error);
-      setError(error.message || 'Something went wrong');
+      console.error('Error fetching user listings:', error);
+      setError('Failed to load listings. Please try again later.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortOption, filterCondition]);
+
+  useEffect(() => {
+    fetchAllListings();
+  }, [sortOption, filterCondition, fetchAllListings]);
 
   const handleAddToCart = async (productId, price) => {
     try {
@@ -85,7 +74,7 @@ const AllUserListings = () => {
         productElement.disabled = true;
       }
       
-      const response = await fetch('https://localhost:8081/api/cart/add', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +216,7 @@ const AllUserListings = () => {
                   <div className="card h-100 product-card">
                     <div className="card-img-container" onClick={() => openProductModal(listing)} style={{ cursor: 'pointer' }}>
                       <img 
-                        src={listing.images && listing.images.length > 0 ? listing.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image'} 
+                        src={listing.images && listing.images.length > 0 ? listing.images[0].url : 'https://placehold.co/300x300?text=No+Image'} 
                         className="card-img-top" 
                         alt={listing.name} 
                         style={{ height: '200px', objectFit: 'contain' }}
@@ -332,7 +321,7 @@ const AllUserListings = () => {
                         ))
                       ) : (
                         <div className="carousel-item active">
-                          <img src="https://via.placeholder.com/500x500?text=No+Image" className="d-block w-100" alt="No Image Available" />
+                          <img src="https://placehold.co/500x500?text=No+Image" className="d-block w-100" alt="Product placeholder" />
                         </div>
                       )}
                     </div>

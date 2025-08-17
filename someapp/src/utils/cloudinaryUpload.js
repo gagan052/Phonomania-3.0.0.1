@@ -8,8 +8,8 @@ import axios from "axios";
 const upload = async (file) => {
   const data = new FormData();
   data.append("file", file);
-  data.append("upload_preset", process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET || "SkillAble"); // Using preset from env
-  data.append("folder", process.env.REACT_APP_DEFAULT_UPLOAD_FOLDER || "SkillAble");
+  data.append("upload_preset", "gagan_preset"); // Using preset from CLOUDINARY_SETUP.md
+  data.append("folder", "gagan"); // Using folder from CLOUDINARY_SETUP.md
 
   try {
     // Using axios to post to Cloudinary API with environment variables

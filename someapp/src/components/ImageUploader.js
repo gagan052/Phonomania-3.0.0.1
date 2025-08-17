@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Cart.css';
 
-const ImageUploader = ({ onImageUpload, folder = 'device-listings', maxFiles = 5 }) => {
+const ImageUploader = ({ onImageUpload, folder = 'gagan', maxFiles = 5 }) => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -42,8 +42,8 @@ const ImageUploader = ({ onImageUpload, folder = 'device-listings', maxFiles = 5
       // Create a new FormData instance
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET || 'SkillAble'); // Using the preset from env
-      formData.append('folder', folder); // Using the folder passed as prop or default
+      formData.append('upload_preset', 'SkillAble'); // Using the preset from CLOUDINARY_SETUP.md
+      formData.append('folder', "SkillAble"); // Using the folder passed as prop or default
       // This preset must be created in your Cloudinary dashboard
       // and set to 'unsigned' mode for this to work
       

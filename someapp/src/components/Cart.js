@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Cart.css';
 import apiService from '../utils/new-request';
@@ -11,11 +11,9 @@ const Cart = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
+  const clearError = () => setError(null);
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -26,6 +24,7 @@ const Cart = () => {
       const response = await apiService.getCart();
       setCartItems(response.data.items || []);
     } catch (error) {
+      console.error('Error fetching cart:', error);
       if (error.response && error.response.status === 401) {
         navigate('/login');
       } else {
@@ -34,7 +33,11 @@ const Cart = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
 
   const updateQuantity = async (productId, change) => {
     
@@ -162,10 +165,7 @@ const Cart = () => {
     }
   };
 
-  // Function to clear error message
-  const clearError = () => {
-    setError(null);
-  };
+  // Function to clear error message is defined at the top of the component
 
   if (checkoutSuccess) {
     return (
@@ -192,7 +192,15 @@ const Cart = () => {
                   className="cart-item fade-in"
                 >
                   <div className="item-image-container">
-                    <img src={item.product.image} alt={item.product.name} className="item-image" />
+                    <img 
+                      src={item.product.images && item.product.images.length > 0 ? item.product.images[0].url : 'https://placehold.co/300x300?text=No+Image'} 
+                      alt={item.product.name} 
+                      className="item-image" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://placehold.co/300x300?text=No+Image';
+                      }}
+                    />
                   </div>
                   <div className="item-details">
                     <h3>{item.product.name}</h3>

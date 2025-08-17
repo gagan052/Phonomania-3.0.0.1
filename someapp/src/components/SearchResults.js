@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import '../Home.css';
 
 const SearchResults = () => {
@@ -19,7 +19,8 @@ const SearchResults = () => {
         setLoading(true);
         
         // Build the API URL with search parameters
-        let apiUrl = 'https://localhost:8081/api/products';
+        const API_URL = process.env.REACT_APP_API_URL;
+        let apiUrl = `${API_URL}/products`;
         
         // If we have a search query, add it to the request
         if (query) {
@@ -65,7 +66,8 @@ const SearchResults = () => {
         productElement.disabled = true;
       }
       
-      const response = await fetch('https://localhost:8081/api/cart/add', {
+      const API_URL = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${API_URL}/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,9 +133,13 @@ const SearchResults = () => {
               <div className="card h-100 product-card">
                 <div className="card-img-container">
                   <img 
-                    src={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/300x300?text=No+Image'} 
+                    src={product.images && product.images.length > 0 ? product.images[0].url : 'https://placehold.co/300x300?text=No+Image'} 
                     className="card-img-top" 
                     alt={product.name} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://placehold.co/300x300?text=No+Image';
+                    }}
                   />
                 </div>
                 <div className="card-body d-flex flex-column">

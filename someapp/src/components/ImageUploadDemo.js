@@ -24,7 +24,7 @@ const ImageUploadDemo = () => {
             
             <ImageUploader 
               onImageUpload={handleImageUpload}
-              folder="gagan"
+              folder="SkillAble"
               maxFiles={5}
             />
             
@@ -64,7 +64,7 @@ const ImageUploadDemo = () => {
               <pre className="bg-light p-2 rounded">
                 {`<ImageUploader 
   onImageUpload={(images) => console.log(images)}
-  folder="gagan"
+  folder="SkillAble"
   maxFiles={5}
 />`}
               </pre>
@@ -74,8 +74,8 @@ const ImageUploadDemo = () => {
                 {`// The onImageUpload callback receives an array of objects:
 [
   {
-    url: "https://res.cloudinary.com/deb5enowt/image/upload/v1234/gagan/image1.jpg",
-    publicId: "gagan/image1"
+    url: "https://res.cloudinary.com/deb5enowt/image/upload/v1234/SkillAbe/image1.jpg",
+    publicId: "SkillAble/image1"
   },
   ...
 ]`}

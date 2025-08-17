@@ -21,26 +21,68 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Add item to cart
-router.post('/add', auth, async (req, res) => {
+// router.post('/', auth, async (req, res) => {
+//   try {
+//     const { productId, quantity, price } = req.body;
+
+//     if (!productId || !quantity || quantity < 1) {
+//       return res.status(400).json({ message: 'Invalid product or quantity' });
+//     }
+
+//     let product;
+//     let productPrice = price; // Use the price from the request
+
+//     try {
+//       // Try to find the product by ID
+//       product = await Product.findById(productId);
+//       if (product) {
+//         productPrice = product.price; // Use product price from database if found
+//       }
+//     } catch (err) {
+//       // If product ID is not a valid ObjectId, we'll use the price from the request
+//       console.log('Using price from request for product:', productId);
+//     }
+
+//     let cart = await Cart.findOne({ user: req.userId });
+//     if (!cart) {
+//       cart = new Cart({ user: req.userId, items: [] });
+//     }
+
+//     // Check if product already in cart
+//     const existingItem = cart.items.find(item => 
+//       item.product && 
+//       (item.product.toString() === productId || 
+//        (typeof item.product === 'string' && item.product === productId)));
+    
+//     if (existingItem) {
+//       existingItem.quantity += quantity;
+//       existingItem.price = productPrice;
+//     } else {
+//       cart.items.push({
+//         product: productId,
+//         quantity,
+//         price: productPrice
+//       });
+//     }
+
+//     await cart.save();
+//     await cart.populate('items.product');
+//     res.json(cart);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// });
+router.post('/', auth, async (req, res) => {
   try {
+    console.log("➡️ Add to cart hit");
+    console.log("User ID:", req.userId);
+    console.log("Request body:", req.body);
+
     const { productId, quantity, price } = req.body;
 
-    if (!productId || !quantity || quantity < 1) {
-      return res.status(400).json({ message: 'Invalid product or quantity' });
-    }
-
-    let product;
-    let productPrice = price; // Use the price from the request
-
-    try {
-      // Try to find the product by ID
-      product = await Product.findById(productId);
-      if (product) {
-        productPrice = product.price; // Use product price from database if found
-      }
-    } catch (err) {
-      // If product ID is not a valid ObjectId, we'll use the price from the request
-      console.log('Using price from request for product:', productId);
+    if (!productId) {
+      return res.status(400).json({ error: "Product ID is required" });
     }
 
     let cart = await Cart.findOne({ user: req.userId });
@@ -55,22 +97,22 @@ router.post('/add', auth, async (req, res) => {
        (typeof item.product === 'string' && item.product === productId)));
     
     if (existingItem) {
-      existingItem.quantity += quantity;
-      existingItem.price = productPrice;
+      existingItem.quantity += quantity || 1;
+      existingItem.price = price;
     } else {
       cart.items.push({
         product: productId,
-        quantity,
-        price: productPrice
+        quantity: quantity || 1,
+        price: price
       });
     }
 
     await cart.save();
     await cart.populate('items.product');
     res.json(cart);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error("❌ Add to cart error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
