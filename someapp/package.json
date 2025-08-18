@@ -35,15 +35,13 @@
     "web-vitals": "^2.1.4"
   },
   "engines": {
-  "node": ">=18"
-}
-,
+    "node": ">=18"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "postinstall": "npx npm-force-resolutions"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -53,6 +51,10 @@
   },
   "resolutions": {
   "enhanced-resolve": "5.15.0"
+},
+"overrides": {
+  "webpack": "5.91.0",
+  "webpack-sources": "3.2.3"
 }
 ,
   "browserslist": {
@@ -66,5 +68,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.6.4"
   }
 }
