@@ -52,8 +52,9 @@
     ]
   },
   "resolutions": {
-    "webpack-sources": "3.2.3"
-  },
+  "enhanced-resolve": "5.15.0"
+}
+,
   "browserslist": {
     "production": [
       ">0.2%",
