@@ -35,9 +35,8 @@
     "web-vitals": "^2.1.4"
   },
   "engines": {
-    "node": "22.x",
-    "npm": "10.x"
-  },
+  "node": "18.x"
+},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -63,6 +62,8 @@
     ]
   },
   "devDependencies": {
-    "webpack-sources": "^3.3.3"
+    "webpack-sources": "^3.2.3"
   }
 }
+
+ 
