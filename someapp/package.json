@@ -50,11 +50,14 @@
     ]
   },
   "resolutions": {
-  "enhanced-resolve": "5.15.0"
+  "enhanced-resolve": "5.15.0",
+  "source-map": "0.6.1"
 },
 "overrides": {
   "webpack": "5.91.0",
-  "webpack-sources": "3.2.3"
+  "webpack-sources": "3.2.3",
+  "source-map": "0.6.1"
+  
 }
 ,
   "browserslist": {
