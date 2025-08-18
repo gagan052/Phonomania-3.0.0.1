@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import './index.css';
 import './Home.css';
 
@@ -13,7 +13,7 @@ const Home = () => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      // setUser(JSON.parse(storedUser));
     }
     
     // Fetch user listings for the featured section
