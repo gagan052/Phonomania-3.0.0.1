@@ -5,18 +5,24 @@ const cors = require('cors');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+const vercelPattern = /^https:\/\/.*\.vercel\.app$/;
+const renderPattern = /^https:\/\/.*\.onrender\.com$/;
+
 app.use(cors({
-  origin: [
-    "http://localhost:3001",
-     "http://localhost:3000",
-     "https://phonomania-2-0-0-1-f.onrender.com/",
-     "https://phonomania-3-0-0-1.vercel.app/",
-     "https://phonomania-store-1-frontend.onrender.com/",
-     
-    ],
-  methods: "GET, POST, PUT, DELETE, OPTIONS",
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || vercelPattern.test(origin) || renderPattern.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
