@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: 'https://phonomania-2-0-0-1.onrender.com/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
